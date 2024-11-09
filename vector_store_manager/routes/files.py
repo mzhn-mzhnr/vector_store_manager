@@ -85,4 +85,4 @@ def get_all_files():
 
 @router.delete("/files/{id}")
 def remove_files(file_id: str):
-    return vector_store.delete(where={"file_id": file_id}) 
+    return vector_store._collection.delete(where={"file_id": file_id})
