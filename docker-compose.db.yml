@@ -1,0 +1,11 @@
+services:
+  chromadb:
+    image: chromadb/chroma:0.5.18
+    ports:
+      - 8000:8000
+    environment:
+      - ANONYMIZED_TELEMETRY=False
+      - ALLOW_RESET=True
+      - IS_PERSISTENT=True
+      - CHROMA_SERVER_AUTHN_CREDENTIALS=${CHROMA_CREDS}
+      - CHROMA_SERVER_AUTHN_PROVIDER=chromadb.auth.basic_authn.BasicAuthenticationServerProvider
