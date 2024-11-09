@@ -15,16 +15,20 @@ pymupdf_parser = PyMuPDFParser()
 
 @router.put("/files")
 async def add_files(files: List[UploadFile] = File(...)):
+    """Загрузка документов"""
     uploaded_files = []
     for file in files:
+        # Проверка типа содержимого файла
         if file.content_type == "application/pdf":
             contents = await file.read()
+            # Загрузка файла в fileservice и получение его идентификатора
             file_id = upload_file(file.filename, contents, file.content_type)
             uploaded_files.append({
                 "filename": file.filename, 
                 "content_type": file.content_type
             })
             
+            # Парсинг страниц из PDF файла
             pages = [
                 page.page_content for page in pymupdf_parser.lazy_parse(Blob.from_data(contents))
             ]
@@ -33,14 +37,18 @@ async def add_files(files: List[UploadFile] = File(...)):
             
             page_number = 1
             for page in pages:
+                # Пропуск пустых страниц
                 if not page.strip():
                     page_number += 1
                     continue
                
+                # Предобработка текста страницы
                 preproc = preprocess_text(page)
+                # Разделение текста на части
                 splits = default_text_splitter.split_text(preproc)
                 
                 for split in splits:
+                    # Создание документа для каждой части текста
                     documents.append(
                         Document(
                             page_content=split,
@@ -54,7 +62,8 @@ async def add_files(files: List[UploadFile] = File(...)):
                     )
                     
                 page_number += 1
-        
+                
+            # Добавление документов в chroma
             for i in range(0, len(documents), 5000):
                 vector_store.add_documents(documents=documents[i:i+5000])
         
@@ -70,6 +79,7 @@ async def add_files(files: List[UploadFile] = File(...)):
     
 @router.get("/files")
 def get_all_files():
+    """Получение всех документов"""
     docs = vector_store.get(include=['metadatas'])
     out = []
     unique_file_ids = set()  # Использование множества для уникальных file_id
@@ -86,4 +96,5 @@ def get_all_files():
 
 @router.delete("/files/{id}")
 def remove_files(file_id: str):
+    """Удаление файла по ID"""
     return vector_store._collection.delete(where={"file_id": file_id})

@@ -1,8 +1,9 @@
 from fastapi import UploadFile
 import vector_store_manager.config as config
-import requests  # Не забудьте импортировать requests
+import requests
 
 def upload_file(filename: str, contents: bytes, content_type: str) -> str:
+    """Загрузка файла на fileservice"""
     files = {"file": (filename, contents, content_type)}
     response = requests.post(f'{config.FILES_URL}/upload', files=files)
     if response.status_code == 200:

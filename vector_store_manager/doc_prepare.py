@@ -20,8 +20,8 @@ en_stemmer = PorterStemmer()
 ru_stemmer = SnowballStemmer("russian")
 
 def preprocess_text(text):
-    """ Preprocesses text by converting to lowercase, removing special characters, 
-        tokenizing, and stemming."""
+    """ Предобрабатывает текст, преобразуя его в нижний регистр, удаляя специальные символы, 
+        токенизуя и стеммируя."""
     text = text.lower()
     text = re.sub(r"[^\w\s\p{Sc}%#@&*()+/\-]+", "", text, flags=re.UNICODE)
     words = word_tokenize(text)
