@@ -45,6 +45,7 @@ async def add_files(files: List[UploadFile] = File(...)):
                         Document(
                             page_content=split,
                             metadata={
+                                "content_type": "application/txt",
                                 "page_number": page_number,
                                 "file_name": file.filename,
                                 "file_id": file_id
