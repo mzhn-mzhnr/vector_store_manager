@@ -31,6 +31,7 @@ def preprocess_text(text):
     #      en_stemmer.stem(word) if re.match(r'^[a-z]+$', word) else word)
     #     for word in words if word not in stop_words
     # ]
+    
     processed_words = words
     return ' '.join(processed_words)
 

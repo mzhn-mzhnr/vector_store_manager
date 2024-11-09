@@ -7,6 +7,7 @@ from vector_store_manager.doc_prepare import preprocess_text, default_text_split
 from langchain_core.documents import Document
 from langchain_core.documents.base import Blob
 from vector_store_manager.store import vector_store
+from vector_store_manager.fileservice import upload_file
 
 router = APIRouter()
 
@@ -18,6 +19,7 @@ async def add_files(files: List[UploadFile] = File(...)):
     for file in files:
         if file.content_type == "application/pdf":
             contents = await file.read()
+            file_id = upload_file(file.filename, contents, file.content_type)
             uploaded_files.append({
                 "filename": file.filename, 
                 "content_type": file.content_type
@@ -34,9 +36,9 @@ async def add_files(files: List[UploadFile] = File(...)):
                 if not page.strip():
                     page_number += 1
                     continue
-                
-                preprocessed_page = preprocess_text(page)
-                splits = default_text_splitter.split_text(preprocessed_page)
+               
+                preproc = preprocess_text(page)
+                splits = default_text_splitter.split_text(preproc)
                 
                 for split in splits:
                     documents.append(
@@ -45,6 +47,7 @@ async def add_files(files: List[UploadFile] = File(...)):
                             metadata={
                                 "page_number": page_number,
                                 "file_name": file.filename,
+                                "file_id": file_id
                             }
                         )
                     )
@@ -63,7 +66,23 @@ async def add_files(files: List[UploadFile] = File(...)):
             }
         }
     )
+    
+@router.get("/files")
+def get_all_files():
+    docs = vector_store.get(include=['metadatas'])
+    out = []
+    unique_file_ids = set()  # Использование множества для уникальных file_id
+    print("get metadata")
+    for meta in docs['metadatas']:
+        if meta['file_id'] not in unique_file_ids:
+            out.append({
+                "file_id": meta['file_id'],
+                "file_name": meta['file_name'],
+            })
+            unique_file_ids.add(meta['file_id'])  # Добавление в множество
+        
+    return {"files": out}    
 
 @router.delete("/files/{id}")
-def remove_files(id: str):
-    return {"message": "OK"}
+def remove_files(file_id: str):
+    return vector_store.delete(where={"file_id": file_id}) 
