@@ -1,4 +1,3 @@
-from fastapi import UploadFile
 import vector_store_manager.config as config
 import requests
 
