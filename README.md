@@ -38,6 +38,6 @@ cp example.env .env
 
 `$ cd vector_store_manager`
 
-`$ pip freeze -r requirements.txt`
+`$ pip install -r requirements.txt`
 
 `$ uvicorn vector_store_manager.main:app --host 0.0.0.0 --port 9000`
